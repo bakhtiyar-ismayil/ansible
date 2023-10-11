@@ -1,0 +1,19 @@
+---
+- name: cron task
+  hosts: all
+  tasks:
+    - name: Ensure a job that runs every day at noon
+      ansible.builtin.cron:
+        name: "datejob1"
+        minute: "0"
+        hour: "12"
+        job: "date >> /root/datefile"
+
+    - name: Ensure a job that runs every day at noon
+      ansible.builtin.cron:
+        name: "datejob"
+        minute: "*/5"
+        user: ansible
+        job: "date >> /home/ansible/datefile"
+
+

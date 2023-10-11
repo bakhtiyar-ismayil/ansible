@@ -1,0 +1,23 @@
+---
+- name: pacage
+  hosts: dev, prod, webservers
+  tasks:
+    - name: Install the latest version of Apache and MariaDB
+      dnf:
+        name:
+          - httpd
+          - mariadb
+          - mod_ssl
+        state: present
+    - name: Install the 'Development tools' package group
+      dnf:
+        name: '@Development tools'
+        state: present
+        when: inventory_hostname in group.dev
+    - name: Upgrade all packages
+      dnf:
+        name: "*"
+        state: latest
+        when: inventory_hostname in group.dev
+
+

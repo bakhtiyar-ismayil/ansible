@@ -1,0 +1,36 @@
+---
+- name: user add 
+  hosts: all
+  vars_files:
+    - lock.yml
+    - users_list.yml
+  tasks:
+    - name: Ensure group "devops" exists
+      ansible.builtin.group:
+        name: devops
+        state: present
+      when: inventory_hostname in groups.dev
+
+    - name: Ensure group "managers" exists
+      ansible.builtin.group:
+        name: managers
+        state: present
+      when: inventory_hostname in groups.proxy
+
+
+    - name: 1)Add the user
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        group: devops
+        password: "{{ pw_dev | password_hash('sha512') }}"
+      loop: "{{ users }}"
+      when: item.job == "developer" and inventory_hostname in groups.dev
+
+    - name: 2)Add the user
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        group: managers
+        password: "{{ pw_mgr | password_hash('sha512') }}"
+      loop: "{{ users }}"
+      when: item.job == "manager" and inventory_hostname in groups.proxy
+

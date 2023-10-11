@@ -1,0 +1,20 @@
+---
+- name: roles
+  hosts: all
+  vars:
+    haproxy_backend_servers:
+     - name: app1
+       address: node3:80
+     - name: app2
+       address: node4:80
+
+  tasks:
+    - name: haproxy role
+      include_role:
+         name: haproxy-role
+      when: inventory_hostname in groups.proxy
+
+    - name: haproxy role
+      include_role:
+         name: php-role
+      when: inventory_hostname in groups.prod

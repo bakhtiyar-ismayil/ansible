@@ -1,0 +1,62 @@
+---
+- name: webdev
+  hosts: dev
+  tasks:
+    - name: create webdev user
+      user:
+        name: webdev
+        state: present
+
+    - name: ensure  Apache exist
+      dnf:
+        name: httpd
+        state: latest
+
+    - name: Ensure group "webdev" exists
+      ansible.builtin.group:
+        name: webdev
+        state: present
+
+    - name: Create a directory if it does not exist
+      ansible.builtin.file:
+        path: /webdev
+        state: directory
+        recurse: yes
+        mode: '2755'
+        owner: webdev
+        
+
+    - name: Create a symbolic link
+      ansible.builtin.file:
+        src: /webdev
+        dest: /var/www/html/webdev
+        state: link
+
+    - name: Copy using inline content
+      ansible.builtin.copy:
+        content: 'Development'
+        dest: /webdev/index.html
+
+    - name: port acccess
+      ansible.posix.firewalld:
+        service: http
+        permanent: true
+        immediate: true
+        state: enabled
+
+
+    - name: Allow apache to modify files in /webdev
+      community.general.sefcontext:
+        target: '/webdev(/.*)?'
+        setype: httpd_sys_content_t
+        state: present
+
+
+    - name: Apply new SELinux file context to filesystem
+      ansible.builtin.command: restorecon -irv /webdev
+
+    - name: Start service httpd, if not started
+      ansible.builtin.service:
+        name: httpd
+        state: started
+        enabled: yes

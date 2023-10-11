@@ -1,0 +1,32 @@
+---
+- name: disk task
+  hosts: all
+  tasks:
+   - name: Read device information (always use unit when probing)
+     community.general.parted: device=/dev/sda unit=MiB
+     register: sda_info    
+     when: ansible_facts['devices']['sda'] is defined
+
+
+   - name: 2)
+     community.general.parted:
+       device: /dev/sda
+       flags: [ lvm ]
+       number: 1
+       state: present
+     when: ansible_facts['devices']['sda'] is defined
+   - name: disk setup
+     setup:   
+
+   - name: 3)
+     community.general.lvg:
+       vg: vgdata
+       pvs: /dev/sda1
+       pesize: 16
+     when: ansible_facts['devices']['sda']['partitions']['sda1'] is defined
+
+   - name: 7)
+     debug:
+       msg: "DISK IS NOT DEFINED"
+     when:
+        - ansible_facts['devices']['sda'] is not defined

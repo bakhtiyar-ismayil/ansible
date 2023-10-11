@@ -1,0 +1,21 @@
+---
+- name: yum repo add
+  hosts: all
+  tasks:
+    - name: Add repository
+      yum_repository:
+        name: AppStream
+        description: AppStream repo
+        baseurl: http://core/rhel9.0/x86_64/devd/AppStream
+        enabled: yes
+        gpgcheck: no
+        gpgkey: http://ecample.key
+    - name: Add repository
+      yum_repository:
+        name: BaseOS
+        description: BaseOS repo
+        baseurl: http://core/rhel9.0/x86_64/devd/BaseOS
+        enabled: yes
+        gpgcheck: no
+        gpgkey: http://ecample.key
+

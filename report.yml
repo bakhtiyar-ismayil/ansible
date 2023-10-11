@@ -1,0 +1,21 @@
+---
+- name: report file get
+  hosts: all
+  tasks:
+    - name: Copy file with owner and permissions
+      ansible.builtin.copy:
+        src: report.txt
+        dest: /root/report.txt
+
+    - name: Validate the sudoers file before saving
+      ansible.builtin.lineinfile:
+        path: /root/report.txt
+        state: present
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      loop:
+        - { regexp: '^HOST', line: 'HOST={{ ansible_facts.hostname }}' }
+        - { regexp: '^MEM', line: 'MEMORY={{ ansible_facts.memtotal_mb }}' }
+        - { regexp: '^BIOS', line: 'BIOS={{ ansible_facts.bios_version }}' }
+        - { regexp: '^SDA_DISK_SIZE', line: 'SDA_DISK_SIZE={%if ansible_facts.devices.sda is defined %}{{ ansible_facts.devices.sda.size }}{%else%}NONE{%endif%}' }
+        - { regexp: '^SDB_DISK_SIZE', line: 'SDB_DISK_SIZE={%if ansible_facts.devices.sdb is defined %}{{ ansible_facts.devices.sdb.size }}{%else%}NONE{%endif%}' }

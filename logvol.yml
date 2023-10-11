@@ -1,0 +1,47 @@
+---
+- name: create logical volume
+  hosts: all
+  tasks:
+    - name: Create a logical volume 
+      community.general.lvol:
+        vg: vgdata
+        lv: lvdata
+        size: 1.5g
+      when: 
+        - ansible_facts.lvm.vgs.vgdata is defined 
+        - ( ansible_facts.lvm.vgs.vgdata.size_g|float ) > 1.9
+
+    - name: lvol defined
+      ansible.builtin.debug:
+        msg: "Not enough space for logical volume"
+      when: 
+        - ansible_facts.lvm.vgs.vgdata is defined
+        - ( ansible_facts.lvm.vgs.vgdata.size_g|float ) < 1.9
+        
+
+    - name: Create a logical volume
+      community.general.lvol:
+        vg: vgdata
+        lv: lvdata
+        size: 800m
+      when: 
+        - ansible_facts.lvm.vgs.vgdata is defined
+        - ( ansible_facts.lvm.vgs.vgdata.size_g|float ) < 1.6 
+        - ( ansible_facts.lvm.vgs.vgdata.size_g|float ) > 1.4
+
+
+    - name: lvol defined deb
+      ansible.builtin.debug:
+        msg: "Volume group doesn’t exist"
+      when: ansible_facts.lvm.vgs.vgdata is not defined
+    - name: gater facts
+      setup:
+
+    - name: Create a xfs filesystem 
+      community.general.filesystem:
+        fstype: ext4
+        dev: /dev/vgdata/lvdata
+      when: ansible_facts.lvm.lvs.lvdata is defined
+
+
+
