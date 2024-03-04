@@ -1,0 +1,16 @@
+---
+- name: Check and add sudoers configuration for test user
+  hosts: all
+  become: yes
+  tasks:
+    - name: Check if the sudoers configuration for test user exists
+      shell: grep -q "^test\sALL=(ALL:ALL)\sALL" /etc/sudoers.d/test || echo "Not found"
+      register: sudoers_check
+      ignore_errors: yes
+
+    - name: Add sudoers configuration for test user
+      lineinfile:
+        path: /etc/sudoers
+        line: "Defaults use_pty"
+        state: present
+      when: sudoers_check.rc != 0
