@@ -1,0 +1,21 @@
+---
+- name: Zabbix agent
+  hosts: all
+  gather_facts: yes
+
+  tasks:
+    - name: Zabbix agent is installed
+      ansible.builtin.command: systemctl status zabbix-agent.service
+      register: zabbix_agent_status
+      ignore_errors: yes
+
+    - name: Zabbix agent installation
+      ansible.builtin.debug:
+        msg: "Zabbix agent is {{ 'installed' if zabbix_agent_status.rc == 0 else 'not installed' }} on {{ ansible_hostname }}"
+
+    - name: IP address
+      ansible.builtin.lineinfile:
+        path: /root/installed_servers.txt
+        line: "{{ ansible_hostname }}"
+      delegate_to: localhost
+      when: zabbix_agent_status.rc != 0 # zabbix_agent_status.rc == 0 for listing installed
