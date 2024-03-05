@@ -1,0 +1,67 @@
+---
+- name: Zabbix agent
+  hosts: hosts
+  become: yes
+
+  tasks:
+    - name: Copy Zabbix agent
+      ansible.builtin.copy:
+        src: /root/zabbix-agent-6.0.27-release1.el8.x86_64.rpm
+        dest: /tmp/
+       # remote_src: yes
+
+    - name: Install Zabbix agent
+      shell:
+        cmd: rpm -ivh /tmp/zabbix-agent-6.0.27-release1.el8.x86_64.rpm
+
+    - name: Server
+      ansible.builtin.replace:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: 'Server=.*'
+        replace: 'Server=10.10.10.10'
+
+    - name: ServerActive
+      ansible.builtin.replace:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: 'ServerActive=.*'
+        replace: 'ServerActive=10.10.10.10'
+
+    - name: Get hostname
+      shell:
+         cmd: hostname
+      register: hostname_result
+      ignore_errors: yes
+
+
+    - name: Replace hostname in Zabbix agent configuration
+      ansible.builtin.lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: '^Hostname='
+        line: "Hostname={{ hostname_result.stdout }}"
+
+    - name: EnableRemoteCommands
+      ansible.builtin.lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        line: 'EnableRemoteCommands=1'
+
+    - name: User
+      ansible.builtin.lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        line: 'User=zabbix'
+
+    - name: Restart Zabbix agent service
+      ansible.builtin.systemd:
+        name: zabbix-agent
+        state: restarted
+
+    - name: hostname
+      shell:
+         cmd: hostname
+      register: hostname_output
+      ignore_errors: yes
+
+    - name: file
+      ansible.builtin.lineinfile:
+        path: /root/installed_hosts
+        line: "{{ hostname_output.stdout }}"
+      delegate_to: localhost
