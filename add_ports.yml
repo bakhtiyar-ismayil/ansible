@@ -5,4 +5,4 @@
 
   tasks:
     - name: bash script
-      script: /home/bakhtiyar-ismayilli/add_ports.sh
+      script: /home/add_ports.sh
