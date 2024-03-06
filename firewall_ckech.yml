@@ -1,0 +1,21 @@
+---
+- name: firewalld
+  hosts: all
+  gather_facts: yes
+
+  tasks:
+    - name: Check firewalld
+      shell: systemctl status firewalld.service
+      register: firewalld_status
+      ignore_errors: yes
+
+    - name: firewalld status
+      ansible.builtin.debug:
+        msg: "Firewalld is {{ 'running' if firewalld_status.rc == 0 else 'not running' }} on {{ ansible_hostname }}"
+
+    - name: hostname
+      ansible.builtin.lineinfile:
+        path: /root/firewalld_servers
+        line: "{{ ansible_hostname }}"
+      delegate_to: localhost
+      when: firewalld_status.rc != 0
