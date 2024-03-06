@@ -1,0 +1,8 @@
+---
+- name: bash
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: bash script
+      script: /home/bakhtiyar-ismayilli/add_ports.sh
