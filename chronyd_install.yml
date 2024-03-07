@@ -1,0 +1,43 @@
+---
+- name: Chronyd install and configure
+  hosts: all
+  become: yes
+  tasks:
+    - name: Copy repo if host is RHEL8
+      ansible.builtin.copy:
+        src: /rhel8.repo
+        dest: /etc/yum.repos.d/
+      when: ansible_distribution == "RedHat" and ansible_distribution_major_version == "8"
+
+    - name: Copy repo if host is RHEL7
+      ansible.builtin.copy:
+        src: /rhel7.repo
+        dest: /etc/yum.repos.d/
+      when: ansible_distribution == "RedHat" and ansible_distribution_major_version == "7"
+
+    - name: Install chrony service to host
+      yum:
+         name:
+            - chrony
+         state: present
+
+    - name: Copy chrony.conf to remote host
+      ansible.builtin.copy:
+        src: /chrony.conf
+        dest: /etc/chrony.conf
+
+    - name: Restart chrony service
+      ansible.builtin.systemd:
+        name: chronyd
+        state: restarted
+
+    - name: Timedatectl status
+      shell: timedatectl && hostname
+      register: timedatectl_status
+      ignore_errors: yes
+
+    - name: Save output to file
+      copy:
+        content: "{{ timedatectl_status.stdout }}"
+        dest: /root/timedatectl_output
+      delegate_to: localhost
