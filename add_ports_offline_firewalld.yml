@@ -1,0 +1,22 @@
+---
+- name: Update firewalld with listened ports
+  hosts: all
+  become: yes
+  tasks:
+    - name: Gather listened ports
+      shell: "ss -tulpan | grep LISTEN | awk '{print $5}' | awk -F':' '{print $NF}' | grep -E '^[0-9]+$'"
+      register: listened_ports
+
+    - name: Set listened ports as a fact
+      set_fact:
+        ports_list: "{{ listened_ports.stdout_lines }}"
+
+    - name: Add ports to firewalld
+      firewalld:
+        port: "{{ item }}/tcp"
+        permanent: true
+        state: enabled
+        immediate: false
+        offline: true
+      loop: "{{ ports_list }}"
+
