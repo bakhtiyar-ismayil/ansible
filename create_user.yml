@@ -3,8 +3,8 @@
   hosts: all
   become: yes
   vars:
-    username: "bakhtiyar.ismayil"
-    password: "{{ 'LandaU2025!@#$%' | password_hash('sha512') }}"
+    username: "thisis.testuser"
+    password: "{{ 'thisistestpass' | password_hash('sha512') }}"
 
   tasks:
     - name: Ensure the user is created
