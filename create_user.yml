@@ -1,0 +1,15 @@
+---
+- name: Create a user and set a password on a remote host
+  hosts: all
+  become: yes
+  vars:
+    username: "bakhtiyar.ismayil"
+    password: "{{ 'LandaU2025!@#$%' | password_hash('sha512') }}"
+
+  tasks:
+    - name: Ensure the user is created
+      ansible.builtin.user:
+        name: "{{ username }}"
+        password: "{{ password }}"
+        state: present
+
